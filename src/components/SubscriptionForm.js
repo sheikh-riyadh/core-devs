@@ -3,16 +3,17 @@ import hitToast from '../helpers/hitToast';
 
 export default function SubscriptionForm() {
   let [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false)
   let [alertClass, setAlertClass] = useState('');
   var parentComp = useRef();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!validate(email)) {
       setAlertClass('alert-validate');
       return;
     }
+    setLoading(true)
     fetch('https://coredevs-server.vercel.app/sendemail', {
       method: 'POST',
       headers: {
@@ -21,10 +22,14 @@ export default function SubscriptionForm() {
       body: JSON.stringify({ email })
     }).then(res => res.json())
       .then(data => {
+        setLoading(false)
         if (data.acknowledged) {
           hitToast("Success")
         }
-      }).catch(() => hitToast('Something went wrong. Please try again.', 'error'))
+      }).catch(() => {
+        setLoading(false)
+        hitToast('Something went wrong. Please try again.', 'error')
+      })
 
     setAlertClass('');
   }
@@ -46,7 +51,7 @@ export default function SubscriptionForm() {
         <span className="focus-input100"></span>
       </div>
       <button className="flex-c-m size3 s2-txt3 how-btn1 trans-04 where1">
-        Subscribe
+        {loading ? "Processing..." : "Subscribe"}
       </button>
     </form>
   );
